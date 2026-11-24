@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en" class="dark h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIBEX - Premium Music Streaming Platform</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            vibexBg: '#080808',
+            vibexSidebar: '#111111',
+            vibexCard: '#181818',
+            vibexCardHover: '#242424',
+            vibexPurple: '#A855F7',
+            vibexBlue: '#3B82F6',
+            vibexAccent: 'linear-gradient(135deg, #A855F7 0%, #3B82F6 100%)'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Poppins', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #080808;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #262626;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #A855F7;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #A855F7 0%, #3B82F6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #A855F7 0%, #3B82F6 100%);
+    }
+    .glass-panel {
+      background: rgba(24, 24, 24, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .audio-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #A855F7;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-vibexBg text-white font-sans antialiased h-full overflow-hidden select-none">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- App Layout -->
+  <div class="flex h-screen w-full flex-col pb-24 md:pb-20">
+    <div class="flex flex-1 overflow-hidden">
+      
+      <!-- SIDEBAR (Desktop) -->
+      <aside class="w-64 bg-vibexSidebar hidden md:flex flex-col border-r border-neutral-800/50 justify-between">
+        <div class="p-5">
+          <!-- Logo -->
+          <div class="flex items-center gap-3 cursor-pointer mb-8" onclick="navigateTo('home')">
+            <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center shadow-lg shadow-purple-500/20">
+              <i class="fa-solid fa-wave-square text-white text-xl"></i>
+            </div>
+            <span class="font-display font-extrabold text-2xl tracking-wider gradient-text">VIBEX</span>
+          </div>
+
+          <!-- Primary Navigation -->
+          <nav class="space-y-1 mb-8">
+            <button onclick="navigateTo('home')" id="nav-home" class="nav-btn w-full flex items-center gap-4 px-4 py-3 text-sm font-semibold text-neutral-300 hover:text-white hover:bg-neutral-800/60 rounded-xl transition-all active-nav">
+              <i class="fa-solid fa-house text-lg w-5 text-purple-400"></i> Home
+            </button>
+            <button onclick="navigateTo('explore')" id="nav-explore" class="nav-btn w-full flex items-center gap-4 px-4 py-3 text-sm font-semibold text-neutral-400 hover:text-white hover:bg-neutral-800/60 rounded-xl transition-all">
+              <i class="fa-solid fa-compass text-lg w-5"></i> Explore Music
+            </button>
+            <button onclick="navigateTo('artists')" id="nav-artists" class="nav-btn w-full flex items-center gap-4 px-4 py-3 text-sm font-semibold text-neutral-400 hover:text-white hover:bg-neutral-800/60 rounded-xl transition-all">
+              <i class="fa-solid fa-user-astronaut text-lg w-5"></i> Artists
+            </button>
+            <button onclick="navigateTo('albums')" id="nav-albums" class="nav-btn w-full flex items-center gap-4 px-4 py-3 text-sm font-semibold text-neutral-400 hover:text-white hover:bg-neutral-800/60 rounded-xl transition-all">
+              <i class="fa-solid fa-compact-disc text-lg w-5"></i> Albums
+            </button>
+            <button onclick="navigateTo('playlists')" id="nav-playlists" class="nav-btn w-full flex items-center gap-4 px-4 py-3 text-sm font-semibold text-neutral-400 hover:text-white hover:bg-neutral-800/60 rounded-xl transition-all">
+              <i class="fa-solid fa-list-ul text-lg w-5"></i> Playlists
+            </button>
+          </nav>
+
+          <!-- Library Section -->
+          <div class="pt-4 border-t border-neutral-800/80">
+            <div class="flex justify-between items-center px-4 mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-neutral-400">Your Library</span>
+              <button onclick="createNewPlaylistModal()" class="text-neutral-400 hover:text-white transition"><i class="fa-solid fa-plus text-xs"></i></button>
+            </div>
+            <div class="space-y-1">
+              <button onclick="navigateTo('favorites')" id="nav-favorites" class="nav-btn w-full flex items-center gap-4 px-4 py-2.5 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/60 rounded-xl transition">
+                <i class="fa-solid fa-heart text-red-500 text-base w-5"></i> Liked Songs
+              </button>
+              <button onclick="navigateTo('recent')" id="nav-recent" class="nav-btn w-full flex items-center gap-4 px-4 py-2.5 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/60 rounded-xl transition">
+                <i class="fa-solid fa-clock-rotate-left text-blue-400 text-base w-5"></i> Recently Played
+              </button>
+              <button onclick="navigateTo('admin')" id="nav-admin" class="nav-btn w-full flex items-center gap-4 px-4 py-2.5 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/60 rounded-xl transition">
+                <i class="fa-solid fa-sliders text-purple-400 text-base w-5"></i> Admin Portal
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Profile Quick Bar -->
+        <div class="p-4 border-t border-neutral-800/80 bg-neutral-900/40 flex items-center justify-between">
+          <div class="flex items-center gap-3 cursor-pointer" onclick="openProfileModal()">
+            <img id="sidebar-user-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="w-9 h-9 rounded-full object-cover ring-2 ring-purple-500/30">
+            <div class="flex flex-col">
+              <span id="sidebar-user-name" class="text-sm font-semibold truncate max-w-[100px]">Alex Vibe</span>
+              <span class="text-[10px] text-purple-400 font-medium tracking-wide">PRO MEMBER</span>
+            </div>
+          </div>
+          <button onclick="openProfileModal()" class="text-neutral-400 hover:text-white p-2"><i class="fa-solid fa-gear"></i></button>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT AREA -->
+      <main class="flex-1 flex flex-col bg-vibexBg overflow-hidden">
+        
+        <!-- HEADER BAR -->
+        <header class="h-16 border-b border-neutral-800/60 bg-vibexBg/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8">
+          <!-- Mobile Menu Logo -->
+          <div class="flex items-center gap-3 md:hidden">
+            <div class="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center">
+              <i class="fa-solid fa-wave-square text-white text-sm"></i>
+            </div>
+            <span class="font-display font-bold text-lg gradient-text">VIBEX</span>
+          </div>
+
+          <!-- Search Input -->
+          <div class="relative flex-1 max-w-md mx-4">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 text-sm"></i>
+            <input type="text" id="global-search-input" onkeyup="handleSearch(this.value)" placeholder="Search songs, artists, albums..." class="w-full bg-neutral-900/90 border border-neutral-800 rounded-full py-2 pl-10 pr-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-purple-500 transition-all shadow-inner">
+          </div>
+
+          <!-- Header Right Actions -->
+          <div class="flex items-center gap-3">
+            <button onclick="triggerUpgradeModal()" class="hidden sm:flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-xs font-bold px-4 py-2 rounded-full transition shadow-lg shadow-purple-900/30">
+              <i class="fa-solid fa-crown text-yellow-300"></i> Get Premium
+            </button>
+            <button onclick="openProfileModal()" class="w-9 h-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center hover:border-purple-500 transition">
+              <i class="fa-solid fa-user text-neutral-300 text-sm"></i>
+            </button>
+          </div>
+        </header>
+
+        <!-- DYNAMIC PAGE CONTAINER -->
+        <div id="page-content" class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-8">
+          <!-- Views rendered by JS -->
+        </div>
+      </main>
+    </div>
+
+    <!-- FIXED BOTTOM MUSIC PLAYER -->
+    <div id="music-player-bar" class="h-20 sm:h-24 bg-neutral-950/95 border-t border-neutral-800/80 fixed bottom-0 left-0 right-0 z-40 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between">
+      
+      <!-- Currently Playing Track Info -->
+      <div class="flex items-center gap-3 w-1/4 min-w-[160px]">
+        <div class="relative group cursor-pointer" onclick="toggleFullScreenPlayer()">
+          <img id="player-cover" src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=150&auto=format&fit=crop&q=80" class="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover shadow-md">
+          <div class="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+            <i class="fa-solid fa-expand text-white text-xs"></i>
+          </div>
+        </div>
+        <div class="flex flex-col overflow-hidden">
+          <span id="player-title" class="text-xs sm:text-sm font-semibold truncate hover:underline cursor-pointer">Select a Song</span>
+          <span id="player-artist" class="text-[11px] sm:text-xs text-neutral-400 truncate hover:underline cursor-pointer">VIBEX Music</span>
+        </div>
+        <button id="player-like-btn" onclick="toggleLikeCurrent()" class="text-neutral-500 hover:text-red-500 ml-1 transition">
+          <i class="fa-regular fa-heart text-base"></i>
+        </button>
+      </div>
+
+      <!-- Controls & Progress Bar -->
+      <div class="flex flex-col items-center gap-1.5 w-2/4 max-w-xl px-2">
+        <!-- Control Buttons -->
+        <div class="flex items-center gap-4 sm:gap-6">
+          <button id="btn-shuffle" onclick="toggleShuffle()" class="text-neutral-400 hover:text-purple-400 text-xs sm:text-sm transition"><i class="fa-solid fa-shuffle"></i></button>
+          <button onclick="playPrev()" class="text-neutral-300 hover:text-white text-sm sm:text-base transition"><i class="fa-solid fa-backward-step"></i></button>
+          <button id="btn-play-pause" onclick="togglePlayPause()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full gradient-bg flex items-center justify-center text-white shadow-lg shadow-purple-600/30 hover:scale-105 transition">
+            <i class="fa-solid fa-play text-sm"></i>
+          </button>
+          <button onclick="playNext()" class="text-neutral-300 hover:text-white text-sm sm:text-base transition"><i class="fa-solid fa-forward-step"></i></button>
+          <button id="btn-repeat" onclick="toggleRepeat()" class="text-neutral-400 hover:text-purple-400 text-xs sm:text-sm transition"><i class="fa-solid fa-repeat"></i></button>
+        </div>
+
+        <!-- Seek Timeline -->
+        <div class="w-full flex items-center gap-2 text-[10px] sm:text-xs text-neutral-400">
+          <span id="player-current-time">0:00</span>
+          <input type="range" id="player-seek" min="0" max="100" value="0" oninput="seekAudio(this.value)" class="audio-range w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer">
+          <span id="player-duration">0:00</span>
+        </div>
+      </div>
+
+      <!-- Volume & Extra Features -->
+      <div class="flex items-center justify-end gap-3 w-1/4 min-w-[120px]">
+        <canvas id="mini-visualizer" class="w-16 h-8 hidden lg:block opacity-70"></canvas>
+        <button id="btn-mute" onclick="toggleMute()" class="text-neutral-400 hover:text-white text-sm"><i class="fa-solid fa-volume-high"></i></button>
+        <input type="range" id="player-volume" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)" class="audio-range w-16 sm:w-20 h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer hidden sm:block">
+        <button onclick="toggleQueueDrawer()" class="text-neutral-400 hover:text-purple-400 text-sm ml-2"><i class="fa-solid fa-list text-base"></i></button>
+      </div>
+    </div>
+
+    <!-- MOBILE BOTTOM BAR NAV -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-neutral-950 border-t border-neutral-800 z-50 flex items-center justify-around text-xs text-neutral-400">
+      <button onclick="navigateTo('home')" class="flex flex-col items-center gap-1 hover:text-purple-400">
+        <i class="fa-solid fa-house text-base"></i> Home
+      </button>
+      <button onclick="navigateTo('explore')" class="flex flex-col items-center gap-1 hover:text-purple-400">
+        <i class="fa-solid fa-compass text-base"></i> Explore
+      </button>
+      <button onclick="navigateTo('playlists')" class="flex flex-col items-center gap-1 hover:text-purple-400">
+        <i class="fa-solid fa-list-ul text-base"></i> Playlists
+      </button>
+      <button onclick="navigateTo('favorites')" class="flex flex-col items-center gap-1 hover:text-purple-400">
+        <i class="fa-solid fa-heart text-base"></i> Favorites
+      </button>
+    </nav>
+  </div>
+
+  <!-- FULLSCREEN PLAYER OVERLAY MODAL -->
+  <div id="modal-full-player" class="fixed inset-0 bg-neutral-950/95 backdrop-blur-2xl z-50 hidden flex-col justify-between p-6 sm:p-12 transition-all duration-300">
+    <div class="flex items-center justify-between">
+      <button onclick="toggleFullScreenPlayer()" class="text-neutral-400 hover:text-white p-2 text-xl"><i class="fa-solid fa-chevron-down"></i></button>
+      <span class="text-xs font-bold uppercase tracking-widest text-neutral-400">Now Playing View</span>
+      <button onclick="toggleQueueDrawer()" class="text-neutral-400 hover:text-white p-2 text-xl"><i class="fa-solid fa-list-check"></i></button>
+    </div>
+
+    <div class="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 my-auto">
+      <div class="relative max-w-sm w-full aspect-square">
+        <img id="full-cover" src="" class="w-full h-full object-cover rounded-2xl shadow-2xl shadow-purple-900/40 border border-neutral-800">
+      </div>
+      <div class="flex flex-col items-center md:items-start space-y-4 max-w-md">
+        <h2 id="full-title" class="text-2xl sm:text-4xl font-extrabold text-white text-center md:text-left">--</h2>
+        <p id="full-artist" class="text-lg text-purple-400 font-medium text-center md:text-left">--</p>
+        <span id="full-album" class="text-xs bg-neutral-800 px-3 py-1 rounded-full text-neutral-300">Album</span>
+        <canvas id="full-visualizer" class="w-full h-16 mt-4 opacity-80"></canvas>
+      </div>
+    </div>
+
+    <div class="w-full max-w-2xl mx-auto space-y-4">
+      <div class="flex items-center justify-between text-sm text-neutral-400">
+        <span id="full-current-time">0:00</span>
+        <input type="range" id="full-seek" min="0" max="100" value="0" oninput="seekAudio(this.value)" class="audio-range w-full mx-4 h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer">
+        <span id="full-duration">0:00</span>
+      </div>
+      <div class="flex items-center justify-center gap-8">
+        <button onclick="toggleShuffle()" class="text-neutral-400 hover:text-purple-400 text-xl"><i class="fa-solid fa-shuffle"></i></button>
+        <button onclick="playPrev()" class="text-white hover:text-purple-400 text-2xl"><i class="fa-solid fa-backward-step"></i></button>
+        <button id="full-play-btn" onclick="togglePlayPause()" class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center text-white text-2xl shadow-xl shadow-purple-600/40">
+          <i class="fa-solid fa-play"></i>
+        </button>
+        <button onclick="playNext()" class="text-white hover:text-purple-400 text-2xl"><i class="fa-solid fa-forward-step"></i></button>
+        <button onclick="toggleRepeat()" class="text-neutral-400 hover:text-purple-400 text-xl"><i class="fa-solid fa-repeat"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUEUE DRAWER -->
+  <div id="drawer-queue" class="fixed right-0 top-0 bottom-24 w-80 bg-neutral-900 border-l border-neutral-800 z-50 transform translate-x-full transition-transform duration-300 p-4 flex flex-col">
+    <div class="flex items-center justify-between pb-4 border-b border-neutral-800">
+      <h3 class="font-bold text-lg">Playback Queue</h3>
+      <button onclick="toggleQueueDrawer()" class="text-neutral-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="queue-list-container" class="flex-1 overflow-y-auto py-4 space-y-2">
+      <!-- Queue Items -->
+    </div>
+  </div>
+
+  <!-- GENERIC MODAL CONTAINER -->
+  <div id="generic-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div id="modal-body" class="bg-vibexCard border border-neutral-800 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+      <!-- Dynamic Content -->
+    </div>
+  </div>
+
+  <!-- HIDDEN AUDIO ENGINE -->
+  <audio id="audio-engine" crossorigin="anonymous"></audio>
+
+  <!-- JS APP LOGIC -->
+  <script>
+    /* ==========================================================================
+       DEMO MUSIC DATABASE & INITIAL STATE
+       ========================================================================== */
+    const DATABASE = {
+      songs: [
+        { id: "s1", title: "Naa Ready", artist: "Anirudh Ravichander", album: "Leo", cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&auto=format&fit=crop&q=80", duration: 248, audio: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=energy-113243.mp3", language: "Telugu", genre: "Party", artistId: "a1", releaseDate: "2023" },
+        { id: "s2", title: "Jai Ho", artist: "A. R. Rahman", album: "Slumdog Millionaire", cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&auto=format&fit=crop&q=80", duration: 319, audio: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=epic-cinematic-11382.mp3", language: "Hindi", genre: "Classical", artistId: "a2", releaseDate: "2008" },
+        { id: "s3", title: "Oo Antava", artist: "Devi Sri Prasad", album: "Pushpa: The Rise", cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&auto=format&fit=crop&q=80", duration: 223, audio: "https://cdn.pixabay.com/download/audio/2022/10/14/audio_99391d4e41.mp3?filename=urban-hip-hop-124964.mp3", language: "Telugu", genre: "Dance", artistId: "a3", releaseDate: "2021" },
+        { id: "s4", title: "Kesariya", artist: "Arijit Singh", album: "Brahmastra", cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&auto=format&fit=crop&q=80", duration: 268, audio: "https://cdn.pixabay.com/download/audio/2022/08/02/audio_884fe92c21.mp3?filename=romantic-guitar-117565.mp3", language: "Hindi", genre: "Romantic", artistId: "a6", releaseDate: "2022" },
+        { id: "s5", title: "Blinding Lights", artist: "The Weeknd", album: "After Hours", cover: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=300&auto=format&fit=crop&q=80", duration: 200, audio: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=synthwave-80s-110045.mp3", language: "English", genre: "Electronic", artistId: "a9", releaseDate: "2020" },
+        { id: "s6", title: "Cruel Summer", artist: "Taylor Swift", album: "Lover", cover: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300&auto=format&fit=crop&q=80", duration: 178, audio: "https://cdn.pixabay.com/download/audio/2022/03/10/audio_c274b59560.mp3?filename=pop-summer-108780.mp3", language: "English", genre: "Pop", artistId: "a8", releaseDate: "2019" },
+        { id: "s7", title: "Samajavaragamana", artist: "Thaman S", album: "Ala Vaikunthapurramuloo", cover: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=300&auto=format&fit=crop&q=80", duration: 215, audio: "https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6592d6e3.mp3?filename=acoustic-melody-112527.mp3", language: "Telugu", genre: "Melody", artistId: "a4", releaseDate: "2020" },
+        { id: "s8", title: "Srivalli", artist: "Sid Sriram", album: "Pushpa", cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=300&auto=format&fit=crop&q=80", duration: 220, audio: "https://cdn.pixabay.com/download/audio/2022/11/06/audio_9b4e3f3192.mp3?filename=soft-romantic-126839.mp3", language: "Telugu", genre: "Melody", artistId: "a5", releaseDate: "2021" }
+      ],
+      artists: [
+        { id: "a1", name: "Anirudh Ravichander", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80", bio: "Renowned Indian music composer and singer known for energetic tracks.", followers: "8.5M" },
+        { id: "a2", name: "A. R. Rahman", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80", bio: "Oscar-winning composer, producer, and singer transforming Indian music.", followers: "12.1M" },
+        { id: "a3", name: "Devi Sri Prasad", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&auto=format&fit=crop&q=80", bio: "Indian composer and singer known for energetic dance & pop anthems.", followers: "6.2M" },
+        { id: "a4", name: "Thaman S", photo: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=300&auto=format&fit=crop&q=80", bio: "Prolific music director and percussionist dominating South cinema.", followers: "5.4M" },
+        { id: "a5", name: "Sid Sriram", photo: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&auto=format&fit=crop&q=80", bio: "Indian-American R&B singer, songwriter, and Carnatic musician.", followers: "4.9M" },
+        { id: "a6", name: "Arijit Singh", photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&auto=format&fit=crop&q=80", bio: "The undisputed voice of Bollywood romantic & soulful melodies.", followers: "35M" },
+        { id: "a8", name: "Taylor Swift", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80", bio: "Global pop icon renowned for her songwriting craftsmanship.", followers: "105M" },
+        { id: "a9", name: "The Weeknd", photo: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=300&auto=format&fit=crop&q=80", bio: "Canadian R&B/Pop star celebrated for synthwave soundscapes.", followers: "88M" }
+      ],
+      albums: [
+        { id: "alb1", title: "Leo (Original Motion Picture Soundtrack)", artist: "Anirudh Ravichander", year: "2023", cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&auto=format&fit=crop&q=80", trackIds: ["s1"] },
+        { id: "alb2", title: "After Hours", artist: "The Weeknd", year: "2020", cover: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=300&auto=format&fit=crop&q=80", trackIds: ["s5"] },
+        { id: "alb3", title: "Brahmastra", artist: "Pritam & Arijit Singh", year: "2022", cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&auto=format&fit=crop&q=80", trackIds: ["s4"] }
+      ],
+      playlists: [
+        { id: "p1", title: "Trending Hits 2026", cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&auto=format&fit=crop&q=80", trackIds: ["s1", "s3", "s5"] },
+        { id: "p2", title: "Telugu Blockbusters", cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&auto=format&fit=crop&q=80", trackIds: ["s1", "s3", "s7", "s8"] },
+        { id: "p3", title: "Hindi Romantic Special", cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&auto=format&fit=crop&q=80", trackIds: ["s2", "s4"] }
+      ]
+    };
+
+    // Application Global State
+    let appState = {
+      user: JSON.parse(localStorage.getItem('vibex_user')) || { name: 'Alex Vibe', email: 'alex@vibex.com', plan: 'Pro Member' },
+      likedSongIds: new Set(JSON.parse(localStorage.getItem('vibex_favorites')) || ["s1", "s4", "s5"]),
+      recentlyPlayed: JSON.parse(localStorage.getItem('vibex_recent')) || [],
+      customPlaylists: JSON.parse(localStorage.getItem('vibex_custom_playlists')) || [],
+      currentTrack: null,
+      queue: [],
+      queueIndex: -1,
+      isPlaying: false,
+      isShuffle: false,
+      isRepeat: false,
+      volume: 0.8
+    };
+
+    // DOM Elements
+    const audio = document.getElementById('audio-engine');
+
+    /* ==========================================================================
+       AUDIO PLAYER & WEB AUDIO API CONTROLLER
+       ========================================================================== */
+    let audioCtx, analyser, dataArray;
+
+    function initAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser();
+        const source = audioCtx.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        analyser.fftSize = 64;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        renderVisualizers();
+      }
+    }
+
+    function playTrack(songId, trackList = null) {
+      const song = DATABASE.songs.find(s => s.id === songId);
+      if (!song) return;
+
+      if (trackList) {
+        appState.queue = [...trackList];
+        appState.queueIndex = appState.queue.findIndex(s => s.id === songId);
+      } else if (!appState.queue.find(s => s.id === songId)) {
+        appState.queue.push(song);
+        appState.queueIndex = appState.queue.length - 1;
+      } else {
+        appState.queueIndex = appState.queue.findIndex(s => s.id === songId);
+      }
+
+      appState.currentTrack = song;
+      audio.src = song.audio;
+      audio.load();
+      
+      audio.play().then(() => {
+        appState.isPlaying = true;
+        updatePlayerUI();
+        addToRecentlyPlayed(song);
+      }).catch(err => {
+        showToast("Audio playback error: " + err.message, "error");
+      });
+
+      initAudioContext();
+    }
+
+    function togglePlayPause() {
+      if (!appState.currentTrack) {
+        if (DATABASE.songs.length > 0) playTrack(DATABASE.songs[0].id, DATABASE.songs);
+        return;
+      }
+
+      if (audio.paused) {
+        audio.play();
+        appState.isPlaying = true;
+      } else {
+        audio.pause();
+        appState.isPlaying = false;
+      }
+      updatePlayerUI();
+    }
+
+    function playNext() {
+      if (appState.queue.length === 0) return;
+      if (appState.isShuffle) {
+        appState.queueIndex = Math.floor(Math.random() * appState.queue.length);
+      } else {
+        appState.queueIndex = (appState.queueIndex + 1) % appState.queue.length;
+      }
+      playTrack(appState.queue[appState.queueIndex].id);
+    }
+
+    function playPrev() {
+      if (appState.queue.length === 0) return;
+      appState.queueIndex = (appState.queueIndex - 1 + appState.queue.length) % appState.queue.length;
+      playTrack(appState.queue[appState.queueIndex].id);
+    }
+
+    function seekAudio(val) {
+      if (!audio.duration) return;
+      audio.currentTime = (val / 100) * audio.duration;
+    }
+
+    function setVolume(val) {
+      audio.volume = val;
+      appState.volume = val;
+    }
+
+    function toggleMute() {
+      audio.muted = !audio.muted;
+      document.getElementById('btn-mute').innerHTML = audio.muted ? '<i class="fa-solid fa-volume-xmark text-red-400"></i>' : '<i class="fa-solid fa-volume-high"></i>';
+    }
+
+    function toggleShuffle() {
+      appState.isShuffle = !appState.isShuffle;
+      document.getElementById('btn-shuffle').classList.toggle('text-purple-400', appState.isShuffle);
+      showToast(appState.isShuffle ? "Shuffle On" : "Shuffle Off");
+    }
+
+    function toggleRepeat() {
+      appState.isRepeat = !appState.isRepeat;
+      audio.loop = appState.isRepeat;
+      document.getElementById('btn-repeat').classList.toggle('text-purple-400', appState.isRepeat);
+      showToast(appState.isRepeat ? "Repeat Song Enabled" : "Repeat Disabled");
+    }
+
+    // Audio Event Listeners
+    audio.ontimeupdate = () => {
+      if (!audio.duration) return;
+      const pct = (audio.currentTime / audio.duration) * 100;
+      document.getElementById('player-seek').value = pct;
+      document.getElementById('full-seek').value = pct;
+
+      document.getElementById('player-current-time').innerText = formatTime(audio.currentTime);
+      document.getElementById('full-current-time').innerText = formatTime(audio.currentTime);
+      document.getElementById('player-duration').innerText = formatTime(audio.duration);
+      document.getElementById('full-duration').innerText = formatTime(audio.duration);
+    };
+
+    audio.onended = () => {
+      if (!appState.isRepeat) playNext();
+    };
+
+    function updatePlayerUI() {
+      if (!appState.currentTrack) return;
+      const song = appState.currentTrack;
+
+      document.getElementById('player-cover').src = song.cover;
+      document.getElementById('player-title').innerText = song.title;
+      document.getElementById('player-artist').innerText = song.artist;
+
+      document.getElementById('full-cover').src = song.cover;
+      document.getElementById('full-title').innerText = song.title;
+      document.getElementById('full-artist').innerText = song.artist;
+      document.getElementById('full-album').innerText = song.album;
+
+      const playIcon = appState.isPlaying ? '<i class="fa-solid fa-pause text-sm"></i>' : '<i class="fa-solid fa-play text-sm"></i>';
+      document.getElementById('btn-play-pause').innerHTML = playIcon;
+      document.getElementById('full-play-btn').innerHTML = appState.isPlaying ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+
+      const isLiked = appState.likedSongIds.has(song.id);
+      document.getElementById('player-like-btn').innerHTML = isLiked ? '<i class="fa-solid fa-heart text-red-500 text-base"></i>' : '<i class="fa-regular fa-heart text-base"></i>';
+      
+      renderQueue();
+    }
+
+    function renderVisualizers() {
+      requestAnimationFrame(renderVisualizers);
+      if (!analyser) return;
+      analyser.getByteFrequencyData(dataArray);
+
+      // Mini Canvas
+      const cvsMini = document.getElementById('mini-visualizer');
+      const ctxMini = cvsMini.getContext('2d');
+      ctxMini.clearRect(0, 0, cvsMini.width, cvsMini.height);
+      const barW = cvsMini.width / dataArray.length;
+      for (let i = 0; i < dataArray.length; i++) {
+        const h = (dataArray[i] / 255) * cvsMini.height;
+        ctxMini.fillStyle = '#A855F7';
+        ctxMini.fillRect(i * barW, cvsMini.height - h, barW - 1, h);
+      }
+
+      // Full Canvas
+      const cvsFull = document.getElementById('full-visualizer');
+      const ctxFull = cvsFull.getContext('2d');
+      ctxFull.clearRect(0, 0, cvsFull.width, cvsFull.height);
+      for (let i = 0; i < dataArray.length; i++) {
+        const h = (dataArray[i] / 255) * cvsFull.height;
+        const gradient = ctxFull.createLinearGradient(0, 0, 0, cvsFull.height);
+        gradient.addColorStop(0, '#A855F7');
+        gradient.addColorStop(1, '#3B82F6');
+        ctxFull.fillStyle = gradient;
+        ctxFull.fillRect(i * (cvsFull.width / dataArray.length), cvsFull.height - h, (cvsFull.width / dataArray.length) - 2, h);
+      }
+    }
+
+    /* ==========================================================================
+       PERSISTENCE & STATE HELPERS
+       ========================================================================== */
+    function toggleLike(songId) {
+      if (appState.likedSongIds.has(songId)) {
+        appState.likedSongIds.delete(songId);
+        showToast("Removed from Liked Songs");
+      } else {
+        appState.likedSongIds.add(songId);
+        showToast("Added to Liked Songs");
+      }
+      localStorage.setItem('vibex_favorites', JSON.stringify(Array.from(appState.likedSongIds)));
+      updatePlayerUI();
+      // Refresh view if on favorites
+      const activeNav = document.querySelector('.active-nav')?.id;
+      if (activeNav === 'nav-favorites') navigateTo('favorites');
+    }
+
+    function toggleLikeCurrent() {
+      if (appState.currentTrack) toggleLike(appState.currentTrack.id);
+    }
+
+    function addToRecentlyPlayed(song) {
+      appState.recentlyPlayed = appState.recentlyPlayed.filter(s => s.id !== song.id);
+      appState.recentlyPlayed.unshift(song);
+      if (appState.recentlyPlayed.length > 20) appState.recentlyPlayed.pop();
+      localStorage.setItem('vibex_recent', JSON.stringify(appState.recentlyPlayed));
+    }
+
+    /* ==========================================================================
+       ROUTING & UI NAVIGATION ENGINE
+       ========================================================================== */
+    function navigateTo(route, param = null) {
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-neutral-800/60', 'text-white', 'active-nav');
+        btn.classList.add('text-neutral-400');
+      });
+
+      const activeBtn = document.getElementById(`nav-${route}`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-neutral-800/60', 'text-white', 'active-nav');
+        activeBtn.classList.remove('text-neutral-400');
+      }
+
+      const container = document.getElementById('page-content');
+      container.scrollTop = 0;
+
+      switch (route) {
+        case 'home': renderHomeView(container); break;
+        case 'explore': renderExploreView(container); break;
+        case 'artists': renderArtistsView(container); break;
+        case 'artist-detail': renderArtistDetailView(container, param); break;
+        case 'albums': renderAlbumsView(container); break;
+        case 'album-detail': renderAlbumDetailView(container, param); break;
+        case 'playlists': renderPlaylistsView(container); break;
+        case 'favorites': renderFavoritesView(container); break;
+        case 'recent': renderRecentView(container); break;
+        case 'admin': renderAdminView(container); break;
+        default: renderHomeView(container);
+      }
+    }
+
+    /* ==========================================================================
+       VIEW RENDERERS
+       ========================================================================== */
+
+    // 1. HOME VIEW
+    function renderHomeView(container) {
+      const hour = new Date().getHours();
+      const greeting = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
+
+      container.innerHTML = `
+        <!-- Greeting Header -->
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-extrabold tracking-tight">${greeting}, <span class="gradient-text">${appState.user.name}</span></h1>
+            <p class="text-sm text-neutral-400 mt-1">Ready for your daily soundtrack?</p>
+          </div>
+        </div>
+
+        <!-- Featured Banner -->
+        <div class="relative rounded-3xl overflow-hidden gradient-bg p-6 sm:p-10 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div class="space-y-4 max-w-lg z-10">
+            <span class="bg-black/30 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase text-purple-200">Featured Release</span>
+            <h2 class="text-3xl sm:text-5xl font-extrabold text-white leading-tight">Leo (Original Motion Picture Soundtrack)</h2>
+            <p class="text-neutral-200 text-sm">Experience the powerhouse album by Anirudh Ravichander featuring top-charting tracks.</p>
+            <button onclick="playTrack('s1', DATABASE.songs)" class="bg-white text-black font-bold px-6 py-3 rounded-full hover:bg-neutral-200 transition flex items-center gap-3 shadow-lg">
+              <i class="fa-solid fa-play text-sm"></i> Listen Now
+            </button>
+          </div>
+          <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&auto=format&fit=crop&q=80" class="w-48 sm:w-64 aspect-square object-cover rounded-2xl shadow-2xl rotate-3 hover:rotate-0 transition duration-500">
+        </div>
+
+        <!-- Section: Trending Hits -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold">Trending Songs</h3>
+            <button onclick="navigateTo('explore')" class="text-xs text-purple-400 font-semibold hover:underline">View All</button>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            ${DATABASE.songs.slice(0, 6).map(song => renderSongCard(song)).join('')}
+          </div>
+        </div>
+
+        <!-- Section: Popular Artists -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold">Popular Artists</h3>
+            <button onclick="navigateTo('artists')" class="text-xs text-purple-400 font-semibold hover:underline">View All</button>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            ${DATABASE.artists.slice(0, 6).map(artist => renderArtistCard(artist)).join('')}
+          </div>
+        </div>
+
+        <!-- Section: Top Telugu & Hindi Tracks -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-vibexCard border border-neutral-800/80 rounded-2xl p-5">
+            <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-fire text-purple-400"></i> Top Telugu Songs</h3>
+            <div class="space-y-2">
+              ${DATABASE.songs.filter(s => s.language === 'Telugu').map(s => renderSongRow(s)).join('')}
+            </div>
+          </div>
+          <div class="bg-vibexCard border border-neutral-800/80 rounded-2xl p-5">
+            <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-bolt text-blue-400"></i> Top Hindi & International</h3>
+            <div class="space-y-2">
+              ${DATABASE.songs.filter(s => s.language !== 'Telugu').map(s => renderSongRow(s)).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 2. EXPLORE MUSIC
+    function renderExploreView(container) {
+      const genres = ["Pop", "Hip-Hop", "Party", "Melody", "Electronic", "Classical", "Romantic", "Dance"];
+      const languages = ["Telugu", "Hindi", "English", "Tamil"];
+
+      container.innerHTML = `
+        <h1 class="text-3xl font-extrabold mb-6">Explore Music</h1>
+
+        <!-- Languages -->
+        <div class="mb-8">
+          <h2 class="text-lg font-bold mb-3">Browse by Language</h2>
+          <div class="flex gap-3 overflow-x-auto pb-2">
+            ${languages.map(lang => `
+              <button onclick="filterExplore('${lang}')" class="bg-neutral-800 border border-neutral-700 hover:border-purple-500 text-sm font-semibold px-5 py-2.5 rounded-full whitespace-nowrap transition">
+                ${lang}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Genres Grid -->
+        <div class="mb-8">
+          <h2 class="text-lg font-bold mb-3">Music Genres</h2>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            ${genres.map(g => `
+              <div onclick="filterExplore('${g}')" class="h-24 rounded-2xl gradient-bg p-4 flex items-end font-bold text-lg shadow-lg cursor-pointer hover:scale-105 transition transform">
+                ${g}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- All Tracks -->
+        <div>
+          <h2 class="text-lg font-bold mb-4">All Tracks Library</h2>
+          <div class="bg-vibexCard border border-neutral-800/80 rounded-2xl p-4 space-y-2" id="explore-songs-list">
+            ${DATABASE.songs.map(s => renderSongRow(s)).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // 3. ARTISTS PAGE
+    function renderArtistsView(container) {
+      container.innerHTML = `
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-3xl font-extrabold">Popular Artists</h1>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          ${DATABASE.artists.map(artist => renderArtistCard(artist)).join('')}
+        </div>
+      `;
+    }
+
+    // 4. ARTIST DETAIL VIEW
+    function renderArtistDetailView(container, artistId) {
+      const artist = DATABASE.artists.find(a => a.id === artistId) || DATABASE.artists[0];
+      const artistSongs = DATABASE.songs.filter(s => s.artistId === artist.id || s.artist.includes(artist.name));
+
+      container.innerHTML = `
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row items-center gap-6 bg-gradient-to-b from-purple-900/40 to-transparent p-6 rounded-3xl">
+          <img src="${artist.photo}" class="w-40 h-40 rounded-full object-cover shadow-2xl ring-4 ring-purple-500/20">
+          <div class="space-y-2 text-center md:text-left">
+            <span class="text-xs font-bold uppercase tracking-widest text-purple-400">Verified Artist</span>
+            <h1 class="text-4xl font-extrabold">${artist.name}</h1>
+            <p class="text-sm text-neutral-400 max-w-xl">${artist.bio}</p>
+            <div class="flex items-center justify-center md:justify-start gap-4 pt-2">
+              <span class="text-xs font-semibold bg-neutral-800 px-3 py-1.5 rounded-full">${artist.followers} Followers</span>
+              <button onclick="playTrack('${artistSongs[0]?.id || 's1'}', DATABASE.songs)" class="gradient-bg text-white font-bold px-6 py-2 rounded-full shadow-lg hover:opacity-90 transition">
+                Play Top Tracks
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Songs -->
+        <div class="mt-8 space-y-4">
+          <h3 class="text-xl font-bold">Popular Songs by ${artist.name}</h3>
+          <div class="bg-vibexCard border border-neutral-800/80 rounded-2xl p-4 space-y-2">
+            ${artistSongs.length > 0 ? artistSongs.map(s => renderSongRow(s)).join('') : '<p class="text-neutral-500 text-sm">No songs listed yet.</p>'}
+          </div>
+        </div>
+      `;
+    }
+
+    // 5. ALBUMS PAGE
+    function renderAlbumsView(container) {
+      container.innerHTML = `
+        <h1 class="text-3xl font-extrabold mb-6">Explore Albums</h1>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          ${DATABASE.albums.map(alb => `
+            <div onclick="navigateTo('album-detail', '${alb.id}')" class="bg-vibexCard p-4 rounded-2xl border border-neutral-800/80 hover:bg-vibexCardHover transition group cursor-pointer">
+              <img src="${alb.cover}" class="w-full aspect-square object-cover rounded-xl mb-3 shadow-lg group-hover:scale-105 transition">
+              <h4 class="font-bold text-sm truncate">${alb.title}</h4>
+              <p class="text-xs text-neutral-400 truncate mt-1">${alb.artist} • ${alb.year}</p>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // 6. ALBUM DETAIL VIEW
+    function renderAlbumDetailView(container, albumId) {
+      const alb = DATABASE.albums.find(a => a.id === albumId) || DATABASE.albums[0];
+      const tracks = DATABASE.songs.filter(s => alb.trackIds.includes(s.id));
+
+      container.innerHTML = `
+        <div class="flex flex-col sm:flex-row items-center gap-6 p-4">
+          <img src="${alb.cover}" class="w-48 h-48 rounded-2xl object-cover shadow-2xl">
+          <div class="space-y-2 text-center sm:text-left">
+            <span class="text-xs font-bold uppercase tracking-widest text-purple-400">ALBUM</span>
+            <h1 class="text-3xl font-extrabold">${alb.title}</h1>
+            <p class="text-sm text-neutral-400">${alb.artist} • ${alb.year} • ${tracks.length} Songs</p>
+            <div class="pt-2">
+              <button onclick="playTrack('${tracks[0]?.id}', DATABASE.songs)" class="gradient-bg text-white font-bold px-6 py-2.5 rounded-full shadow-lg">
+                <i class="fa-solid fa-play text-sm"></i> Play Album
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8 bg-vibexCard border border-neutral-800/80 rounded-2xl p-4 space-y-2">
+          ${tracks.map(s => renderSongRow(s)).join('')}
+        </div>
+      `;
+    }
+
+    // 7. PLAYLISTS MANAGEMENT PAGE
+    function renderPlaylistsView(container) {
+      const allPlaylists = [...DATABASE.playlists, ...appState.customPlaylists];
+
+      container.innerHTML = `
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-3xl font-extrabold">Playlists</h1>
+          <button onclick="createNewPlaylistModal()" class="gradient-bg text-xs font-bold px-4 py-2 rounded-full transition shadow-lg">
+            <i class="fa-solid fa-plus"></i> Create Playlist
+          </button>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          ${allPlaylists.map(pl => `
+            <div class="bg-vibexCard p-4 rounded-2xl border border-neutral-800/80 hover:bg-vibexCardHover transition group cursor-pointer relative">
+              <img src="${pl.cover || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300'}" class="w-full aspect-square object-cover rounded-xl mb-3 shadow-lg">
+              <h4 class="font-bold text-sm truncate">${pl.title}</h4>
+              <p class="text-xs text-neutral-400 mt-1">${pl.trackIds.length} Songs</p>
+              <button onclick="playTrack('${pl.trackIds[0] || 's1'}', DATABASE.songs)" class="absolute bottom-16 right-6 w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-white shadow-xl opacity-0 group-hover:opacity-100 transition">
+                <i class="fa-solid fa-play text-sm"></i>
+              </button>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // 8. FAVORITES VIEW
+    function renderFavoritesView(container) {
+      const likedSongs = DATABASE.songs.filter(s => appState.likedSongIds.has(s.id));
+
+      container.innerHTML = `
+        <div class="flex items-center gap-6 p-4">
+          <div class="w-32 h-32 rounded-2xl gradient-bg flex items-center justify-center shadow-xl">
+            <i class="fa-solid fa-heart text-5xl text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-extrabold">Liked Songs</h1>
+            <p class="text-sm text-neutral-400 mt-1">${likedSongs.length} Favorite Songs Saved</p>
+          </div>
+        </div>
+        <div class="mt-6 bg-vibexCard border border-neutral-800/80 rounded-2xl p-4 space-y-2">
+          ${likedSongs.length > 0 ? likedSongs.map(s => renderSongRow(s)).join('') : '<p class="text-neutral-500 text-sm p-4">No liked songs yet.</p>'}
+        </div>
+      `;
+    }
+
+    // 9. RECENTLY PLAYED VIEW
+    function renderRecentView(container) {
+      container.innerHTML = `
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-3xl font-extrabold">Recently Played History</h1>
+          <button onclick="clearRecentHistory()" class="text-xs text-red-400 font-semibold hover:underline">Clear History</button>
+        </div>
+        <div class="bg-vibexCard border border-neutral-800/80 rounded-2xl p-4 space-y-2">
+          ${appState.recentlyPlayed.length > 0 ? appState.recentlyPlayed.map(s => renderSongRow(s)).join('') : '<p class="text-neutral-500 text-sm p-4">No playback history recorded yet.</p>'}
+        </div>
+      `;
+    }
+
+    // 10. ADMIN DASHBOARD VIEW
+    function renderAdminView(container) {
+      container.innerHTML = `
+        <h1 class="text-3xl font-extrabold mb-6">Admin Dashboard</h1>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div class="bg-vibexCard border border-neutral-800 p-5 rounded-2xl">
+            <span class="text-neutral-400 text-xs font-semibold uppercase">Total Track Library</span>
+            <h2 class="text-3xl font-bold mt-2">${DATABASE.songs.length} Tracks</h2>
+          </div>
+          <div class="bg-vibexCard border border-neutral-800 p-5 rounded-2xl">
+            <span class="text-neutral-400 text-xs font-semibold uppercase">Total Artists</span>
+            <h2 class="text-3xl font-bold mt-2">${DATABASE.artists.length} Artists</h2>
+          </div>
+          <div class="bg-vibexCard border border-neutral-800 p-5 rounded-2xl">
+            <span class="text-neutral-400 text-xs font-semibold uppercase">Playlists Active</span>
+            <h2 class="text-3xl font-bold mt-2">${DATABASE.playlists.length + appState.customPlaylists.length} Playlists</h2>
+          </div>
+        </div>
+
+        <div class="bg-vibexCard border border-neutral-800/80 rounded-2xl p-6">
+          <h3 class="text-lg font-bold mb-4">Add New Song metadata</h3>
+          <form onsubmit="handleAdminAddSong(event)" class="space-y-4 max-w-xl">
+            <div>
+              <label class="block text-xs font-semibold text-neutral-400 mb-1">Song Title</label>
+              <input type="text" id="admin-title" required class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2.5 text-sm">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-neutral-400 mb-1">Artist Name</label>
+                <input type="text" id="admin-artist" required class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2.5 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-neutral-400 mb-1">Album Title</label>
+                <input type="text" id="admin-album" required class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2.5 text-sm">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-neutral-400 mb-1">Audio Stream URL (MP3/AAC)</label>
+                <input type="url" id="admin-audio" required placeholder="https://..." class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2.5 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-neutral-400 mb-1">Album Artwork URL</label>
+                <input type="url" id="admin-cover" required placeholder="https://..." class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2.5 text-sm">
+              </div>
+            </div>
+            <button type="submit" class="gradient-bg text-white font-bold text-sm px-6 py-2.5 rounded-xl shadow-lg">
+              Save Song to Database
+            </button>
+          </form>
+        </div>
+      `;
+    }
+
+    /* ==========================================================================
+       CARD & ROW REUSABLE COMPONENTS
+       ========================================================================== */
+    function renderSongCard(song) {
+      return `
+        <div onclick="playTrack('${song.id}', DATABASE.songs)" class="bg-vibexCard p-3 rounded-2xl border border-neutral-800/80 hover:bg-vibexCardHover transition group cursor-pointer relative">
+          <div class="relative mb-3 overflow-hidden rounded-xl">
+            <img src="${song.cover}" class="w-full aspect-square object-cover group-hover:scale-105 transition duration-300">
+            <button class="absolute bottom-2 right-2 w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-white shadow-xl opacity-0 group-hover:opacity-100 transition transform translate-y-2 group-hover:translate-y-0">
+              <i class="fa-solid fa-play text-xs"></i>
+            </button>
+          </div>
+          <h4 class="font-bold text-xs truncate">${song.title}</h4>
+          <p class="text-[11px] text-neutral-400 truncate mt-0.5">${song.artist}</p>
+        </div>
+      `;
+    }
+
+    function renderSongRow(song) {
+      const isLiked = appState.likedSongIds.has(song.id);
+      return `
+        <div class="flex items-center justify-between p-2 rounded-xl hover:bg-neutral-800/50 transition group">
+          <div class="flex items-center gap-3 cursor-pointer overflow-hidden" onclick="playTrack('${song.id}', DATABASE.songs)">
+            <img src="${song.cover}" class="w-10 h-10 rounded-lg object-cover">
+            <div class="flex flex-col overflow-hidden">
+              <span class="text-xs font-semibold truncate group-hover:text-purple-400 transition">${song.title}</span>
+              <span class="text-[11px] text-neutral-400 truncate">${song.artist}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="text-[11px] text-neutral-500 hidden sm:block">${formatTime(song.duration)}</span>
+            <button onclick="toggleLike('${song.id}')" class="text-neutral-500 hover:text-red-500 transition">
+              <i class="${isLiked ? 'fa-solid fa-heart text-red-500' : 'fa-regular fa-heart'} text-xs"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderArtistCard(artist) {
+      return `
+        <div onclick="navigateTo('artist-detail', '${artist.id}')" class="bg-vibexCard p-4 rounded-2xl border border-neutral-800/80 hover:bg-vibexCardHover transition group cursor-pointer text-center">
+          <img src="${artist.photo}" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover mx-auto mb-3 shadow-lg group-hover:scale-105 transition">
+          <h4 class="font-bold text-xs sm:text-sm truncate">${artist.name}</h4>
+          <p class="text-[10px] sm:text-xs text-neutral-400 mt-0.5">Artist</p>
+        </div>
+      `;
+    }
+
+    /* ==========================================================================
+       MODALS & DRAWER INTERACTIONS
+       ========================================================================== */
+    function toggleFullScreenPlayer() {
+      const modal = document.getElementById('modal-full-player');
+      modal.classList.toggle('hidden');
+      modal.classList.toggle('flex');
+    }
+
+    function toggleQueueDrawer() {
+      const drawer = document.getElementById('drawer-queue');
+      drawer.classList.toggle('translate-x-full');
+    }
+
+    function renderQueue() {
+      const container = document.getElementById('queue-list-container');
+      if (!container) return;
+      container.innerHTML = appState.queue.map((song, idx) => `
+        <div class="flex items-center justify-between p-2 rounded-xl ${idx === appState.queueIndex ? 'bg-neutral-800 border-l-2 border-purple-500' : 'hover:bg-neutral-800/40'} text-xs cursor-pointer" onclick="playTrack('${song.id}')">
+          <div class="flex items-center gap-2 overflow-hidden">
+            <img src="${song.cover}" class="w-8 h-8 rounded object-cover">
+            <div class="truncate">
+              <p class="font-semibold truncate">${song.title}</p>
+              <p class="text-[10px] text-neutral-400 truncate">${song.artist}</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openProfileModal() {
+      const body = document.getElementById('modal-body');
+      body.innerHTML = `
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold">User Profile Settings</h3>
+          <button onclick="closeModal()" class="text-neutral-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Display Name</label>
+            <input type="text" id="profile-name-input" value="${appState.user.name}" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Account Tier</label>
+            <input type="text" disabled value="${appState.user.plan}" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-2.5 text-sm text-neutral-500">
+          </div>
+          <button onclick="saveProfile()" class="w-full gradient-bg font-bold py-2.5 rounded-xl text-sm shadow-lg">Save Profile Updates</button>
+        </div>
+      `;
+      document.getElementById('generic-modal').classList.remove('hidden');
+    }
+
+    function saveProfile() {
+      const newName = document.getElementById('profile-name-input').value;
+      if (newName) {
+        appState.user.name = newName;
+        localStorage.setItem('vibex_user', JSON.stringify(appState.user));
+        document.getElementById('sidebar-user-name').innerText = newName;
+        closeModal();
+        showToast("Profile settings saved!");
+        navigateTo('home');
+      }
+    }
+
+    function createNewPlaylistModal() {
+      const body = document.getElementById('modal-body');
+      body.innerHTML = `
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold">Create New Playlist</h3>
+          <button onclick="closeModal()" class="text-neutral-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Playlist Name</label>
+            <input type="text" id="playlist-name-input" placeholder="My Awesome VIBEX Tracklist" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-2.5 text-sm">
+          </div>
+          <button onclick="savePlaylist()" class="w-full gradient-bg font-bold py-2.5 rounded-xl text-sm shadow-lg">Create Playlist</button>
+        </div>
+      `;
+      document.getElementById('generic-modal').classList.remove('hidden');
+    }
+
+    function savePlaylist() {
+      const name = document.getElementById('playlist-name-input').value;
+      if (name) {
+        const newPl = { id: 'custom_' + Date.now(), title: name, cover: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300', trackIds: [] };
+        appState.customPlaylists.push(newPl);
+        localStorage.setItem('vibex_custom_playlists', JSON.stringify(appState.customPlaylists));
+        closeModal();
+        showToast("New Playlist Created!");
+        navigateTo('playlists');
+      }
+    }
+
+    function triggerUpgradeModal() {
+      const body = document.getElementById('modal-body');
+      body.innerHTML = `
+        <div class="text-center space-y-4 py-4">
+          <div class="w-16 h-16 rounded-full gradient-bg mx-auto flex items-center justify-center text-3xl shadow-xl">
+            <i class="fa-solid fa-crown text-yellow-300"></i>
+          </div>
+          <h3 class="text-2xl font-extrabold">Upgrade to VIBEX Hi-Fi</h3>
+          <p class="text-xs text-neutral-400">Unlock spatial audio, unlimited downloads, offline playback, and 320kbps lossless streaming sound quality.</p>
+          <button onclick="closeModal(); showToast('Subscribed to VIBEX Hi-Fi!')" class="w-full gradient-bg font-bold py-3 rounded-xl text-sm shadow-xl">Start 30-Day Free Trial</button>
+        </div>
+      `;
+      document.getElementById('generic-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('generic-modal').classList.add('hidden');
+    }
+
+    function clearRecentHistory() {
+      appState.recentlyPlayed = [];
+      localStorage.removeItem('vibex_recent');
+      navigateTo('recent');
+      showToast("History cleared!");
+    }
+
+    /* ==========================================================================
+       SEARCH ENGINE & ADMIN LOGIC
+       ========================================================================== */
+    function handleSearch(query) {
+      if (!query.trim()) {
+        navigateTo('home');
+        return;
+      }
+      const q = query.toLowerCase();
+      const matchedSongs = DATABASE.songs.filter(s => s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q) || s.genre.toLowerCase().includes(q));
+
+      const container = document.getElementById('page-content');
+      container.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">Search Results for "${query}"</h2>
+        <div class="bg-vibexCard border border-neutral-800/80 rounded-2xl p-4 space-y-2">
+          ${matchedSongs.length > 0 ? matchedSongs.map(s => renderSongRow(s)).join('') : '<p class="text-neutral-500 text-sm p-4">No tracks match your query.</p>'}
+        </div>
+      `;
+    }
+
+    function filterExplore(keyword) {
+      handleSearch(keyword);
+    }
+
+    function handleAdminAddSong(e) {
+      e.preventDefault();
+      const newSong = {
+        id: 's' + (DATABASE.songs.length + 1),
+        title: document.getElementById('admin-title').value,
+        artist: document.getElementById('admin-artist').value,
+        album: document.getElementById('admin-album').value,
+        audio: document.getElementById('admin-audio').value,
+        cover: document.getElementById('admin-cover').value,
+        duration: 180,
+        language: "English",
+        genre: "Pop"
+      };
+      DATABASE.songs.unshift(newSong);
+      showToast("Song Added to Database!");
+      navigateTo('explore');
+    }
+
+    /* ==========================================================================
+       UTILITIES & INITIALIZATION
+       ========================================================================== */
+    function formatTime(secs) {
+      if (isNaN(secs)) return "0:00";
+      const m = Math.floor(secs / 60);
+      const s = Math.floor(secs % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    function showToast(msg, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `glass-panel px-4 py-3 rounded-xl text-xs font-semibold shadow-2xl flex items-center gap-2 transform translate-y-2 transition duration-300 pointer-events-auto border-l-4 ${type === 'error' ? 'border-red-500' : 'border-purple-500'}`;
+      toast.innerHTML = `<i class="fa-solid fa-circle-info text-purple-400"></i> ${msg}`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Initialize Application
+    window.onload = () => {
+      document.getElementById('sidebar-user-name').innerText = appState.user.name;
+      navigateTo('home');
+      // Set initial song metadata in player bar
+      if (DATABASE.songs.length > 0) {
+        appState.currentTrack = DATABASE.songs[0];
+        updatePlayerUI();
+      }
+    };
+  </script>
+</body>
+</html>
